@@ -1,0 +1,26 @@
+{
+    "name": "carte_du_pelerin",
+    "version": "1.0.0",
+    "description": "",
+    "license": "ISC",
+    "author": "",
+    "type": "module",
+    "main": "server.js",
+    "scripts": {
+        "dev": "node --watch src/server.js",
+        "start": "node src/server.js",
+        "lint": "standard",
+        "lint:fix": "standard --fix"
+    },
+    "dependencies": {
+        "@fastify/cors": "^11.1.0",
+        "@fastify/autoload": "^6.3.1",
+        "@fastify/static": "^8.2.0",
+        "@fastify/view": "^11.1.1",
+        "fastify": "^5.6.2",
+        "mysql2": "^3.15.3"
+    },
+    "devDependencies": {
+        "standard": "^17.1.2"
+    }
+}
