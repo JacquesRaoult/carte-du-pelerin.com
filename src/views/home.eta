@@ -48,13 +48,34 @@
         </div>
     </div>
 
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle"></h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+                <span class="modal-category" id="modalCategory"></span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-description" id="modalDescription"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
     <script>
         let map;
         let markersLayer;
         let pois = [];
         let currentCategory = 'all';
         let searchTerm = '';
+
+        // Configuration de marked pour le markdown
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
 
         // Fonction helper pour les labels de catégories
         function getCategoryLabel(category) {
@@ -66,16 +87,56 @@
             return labels[category] || category;
         }
 
+        // Ouvrir la modal
+        function openModal(poi) {
+            const modal = document.getElementById('modalOverlay');
+            const title = document.getElementById('modalTitle');
+            const category = document.getElementById('modalCategory');
+            const description = document.getElementById('modalDescription');
+
+            title.textContent = poi.name;
+            category.textContent = getCategoryLabel(poi.category);
+            category.className = `modal-category category-${poi.category}`;
+            
+            // Convertir le markdown en HTML
+            description.innerHTML = marked.parse(poi.fullDescription || 'Aucune description disponible');
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Empêcher le scroll
+        }
+
+        // Fermer la modal
+        function closeModal() {
+            const modal = document.getElementById('modalOverlay');
+            modal.classList.remove('active');
+            document.body.style.overflow = ''; // Réactiver le scroll
+        }
+
+        // Événements de fermeture
+        document.getElementById('modalClose').addEventListener('click', closeModal);
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modalOverlay') {
+                closeModal();
+            }
+        });
+
+        // Fermeture avec la touche Échap
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
         // Initialisation de la carte
         function initMap() {
-            map = L.map('map').setView([46.5, 2.5], 6);
+            map = L.map('map', { zoomControl: false }).setView([46.5, 2.5], 6);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
             }).addTo(map);
 
-            map.attributionControl.setPrefix('');  // 👈 Retirer juste "Leaflet"
+            map.attributionControl.setPrefix('');
 
             markersLayer = L.layerGroup().addTo(map);
         }
@@ -86,18 +147,15 @@
                 const response = await fetch('https://www.carte-du-pelerin.com/api/geojson');
                 const geojson = await response.json();
 
-                // Transformer GeoJSON en pois
                 pois = geojson.features.map((feature, index) => {
                     const props = feature.properties || {};
 
-                    // Extraire une catégorie depuis la couleur umap ou le contenu
                     let category = 'monument';
                     const color = props._umap_options?.color;
-                    if (color === 'FireBrick') category = 'restaurant'; // Reliques du Christ
-                    else if (color === 'SkyBlue') category = 'hotel'; // Apparitions mariales
-                    else if (color === 'LightYellow') category = 'monument'; // Saints
+                    if (color === 'FireBrick') category = 'restaurant';
+                    else if (color === 'SkyBlue') category = 'hotel';
+                    else if (color === 'LightYellow') category = 'monument';
 
-                    // Nettoyer la description (enlever les emojis et markdown pour l'aperçu)
                     let cleanDesc = props.description || '';
                     cleanDesc = cleanDesc.replace(/🚩|📜|📚|📝|📷|🔗|##|\*\*|{{.*?}}|\[\[.*?\]\]/g, '');
                     cleanDesc = cleanDesc.split('\n').filter(l => l.trim()).slice(0, 3).join(' ').substring(0, 200);
@@ -133,6 +191,7 @@
                     <div class="popup-title">${poi.name}</div>
                     <span class="popup-category category-${poi.category}">${getCategoryLabel(poi.category)}</span>
                     <div class="popup-description">${poi.description}</div>
+                    <button onclick="openModalFromMap(${poi.id})" style="margin-top: 10px; padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Voir détails</button>
                 `);
 
                 marker.on('click', () => {
@@ -142,7 +201,6 @@
                 markersLayer.addLayer(marker);
             });
 
-            // Ajuster la vue pour afficher tous les marqueurs
             if (filteredPois.length > 0) {
                 const bounds = L.latLngBounds(
                     filteredPois.map(poi => [poi.coordinates[1], poi.coordinates[0]])
@@ -150,6 +208,14 @@
                 map.fitBounds(bounds, { padding: [50, 50] });
             }
         }
+
+        // Fonction globale pour ouvrir la modal depuis le popup de la carte
+        window.openModalFromMap = function(poiId) {
+            const poi = pois.find(p => p.id === poiId);
+            if (poi) {
+                openModal(poi);
+            }
+        };
 
         // Filtrer les POIs
         function getFilteredPois() {
@@ -174,21 +240,13 @@
                 </div>
             `).join('');
 
-            // Ajouter les événements de clic
+            // Ajouter les événements de clic - OUVRE LA MODAL
             document.querySelectorAll('.poi-item').forEach(item => {
                 item.addEventListener('click', () => {
                     const poiId = parseInt(item.dataset.id);
                     const poi = pois.find(p => p.id === poiId);
                     if (poi) {
-                        const [lng, lat] = poi.coordinates;
-                        map.setView([lat, lng], 15);
-
-                        // Ouvrir le popup du marqueur correspondant
-                        markersLayer.eachLayer(layer => {
-                            if (layer.getLatLng().lat === lat && layer.getLatLng().lng === lng) {
-                                layer.openPopup();
-                            }
-                        });
+                        openModal(poi);
                     }
                 });
             });
