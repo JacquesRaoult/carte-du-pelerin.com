@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Admin</title>
+    <link rel="stylesheet" href="/css/global.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Connexion Administrateur</h1>
+        
+        <% if (it.error) { %>
+            <div class="error"><%= it.error %></div>
+        <% } %>
+        
+        <form method="POST" action="/login">
+            <div>
+                <label>Identifiant</label>
+                <input type="text" name="username" required>
+            </div>
+            <div>
+                <label>Mot de passe</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit">Se connecter</button>
+        </form>
+    </div>
+</body>
+</html>

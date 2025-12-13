@@ -4,12 +4,29 @@ import { dirname, join } from 'node:path'
 import fastify from 'fastify'
 import fastifyView from '@fastify/view'
 import fastifyStatic from '@fastify/static'
+import fastifySession from '@fastify/session'
+import fastifyCookie from '@fastify/cookie'
+import fastifyFormbody from '@fastify/formbody'
 import { Eta } from 'eta'
 
 const app = fastify({ logger: true })
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const eta = new Eta()
+
+app.register(fastifyCookie)
+
+app.register(fastifySession, {
+    secret: process.env.SESSION_SECRET || 'changez-moi-en-production-avec-une-cle-longue-et-aleatoire',
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // true en production avec HTTPS
+        httpOnly: true,
+        maxAge: 1800000 // 30 minutes
+    },
+    saveUninitialized: false
+})
+
+app.register(fastifyFormbody)
 
 app.register(fastifyView, {
     engine: { eta },
