@@ -1,6 +1,6 @@
 import { pool } from '../utils/database.js'
 
-export async function getAllPilgrimSites() {
+export async function getAllPilgrimSites () {
   try {
     const [rows] = await pool.query(
       'SELECT name, category FROM pilgrim_map ORDER BY name ASC'
@@ -12,7 +12,7 @@ export async function getAllPilgrimSites() {
   }
 }
 
-export async function getPilgrimSiteById(id) {
+export async function getPilgrimSiteById (id) {
   try {
     const [rows] = await pool.query(
       'SELECT * FROM pilgrim_map WHERE id = ?',

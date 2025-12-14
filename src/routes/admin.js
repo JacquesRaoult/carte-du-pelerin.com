@@ -14,7 +14,7 @@ export default async function (fastify, opts) {
 
     try {
       const sites = await getAllPilgrimSites()
-      
+
       return reply.view('admin.eta', {
         user,
         sites

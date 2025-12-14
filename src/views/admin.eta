@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,19 +16,36 @@
         .header {
             background: #5a67d8;
             color: white;
-            padding: 20px;
+            padding: 20px 40px;
             margin: -20px -20px 20px -20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
         .logout {
             background: white;
             color: #5a67d8;
-            padding: 8px 16px;
+            padding: 10px 20px;
             text-decoration: none;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .logout:hover {
+            background: #f0f0f0;
         }
 
         .content {
@@ -43,6 +61,10 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+        }
+
+        .count-text {
+            color: grey;
         }
 
         .btn {
@@ -85,7 +107,8 @@
             border-collapse: collapse;
         }
 
-        th, td {
+        th,
+        td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
@@ -111,21 +134,40 @@
         .actions {
             white-space: nowrap;
         }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .header-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="header">
-        <h1>Console d'administration</h1>
-        <a href="/admin/logout" class="logout">Déconnexion</a>
+        <h1>⚙ Console d'administration</h1>
+        <div class="header-buttons">
+            <a href="/" class="logout">🗺️ Carte</a>
+            <a href="/admin/logout" class="logout">🚪 Déconnexion</a>
+        </div>
     </div>
 
     <div class="content">
         <div class="top-bar">
-            <h2>Lieux de Pèlerinage (<%= it.sites ? it.sites.length : 0 %>)</h2>
+            <h2>📍 <span class="count-text">
+                    <%= it.sites ? it.sites.length : 0 %>
+                </span> lieux répertoriés dans la base de données</h2>
             <button class="btn btn-primary" disabled>➕ Ajouter un lieu</button>
         </div>
 
-        <% if (it.sites && it.sites.length > 0) { %>
+        <% if (it.sites && it.sites.length> 0) { %>
             <table>
                 <thead>
                     <tr>
@@ -137,19 +179,24 @@
                 <tbody>
                     <% it.sites.forEach(function(site) { %>
                         <tr>
-                            <td><%= site.name %></td>
-                            <td><span class="badge"><%= site.category %></span></td>
+                            <td>
+                                <%= site.name %>
+                            </td>
+                            <td><span class="badge">
+                                    <%= site.category %>
+                                </span></td>
                             <td class="actions">
                                 <button class="btn btn-edit" disabled>✏️ Éditer</button>
                                 <button class="btn btn-delete" disabled>🗑️ Supprimer</button>
                             </td>
                         </tr>
-                    <% }) %>
+                        <% }) %>
                 </tbody>
             </table>
-        <% } else { %>
-            <p>Aucun lieu trouvé.</p>
-        <% } %>
+            <% } else { %>
+                <p>Aucun lieu trouvé.</p>
+                <% } %>
     </div>
 </body>
+
 </html>
