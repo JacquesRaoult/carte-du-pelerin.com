@@ -27,7 +27,7 @@ export default async function (fastify, opts) {
           geometry: row.geometry,
           properties: {
             name: row.name,
-            category : row.category,
+            category: row.category,
             description: row.description
           }
         }))
