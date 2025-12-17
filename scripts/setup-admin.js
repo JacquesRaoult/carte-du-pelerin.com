@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import readline from 'readline'
-import { pool } from '../src/services/database.js'
+import { pool } from '../src/utils/database.js'
 
 function promptUser (question) {
   const rl = readline.createInterface({
